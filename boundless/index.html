@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<title>Map test</title>
+<style type="text/css">
+	html, body { height: 100%; margin: 0; padding: 0; }
+	#map { width: 100%; height: 100%; }
+</style>
+
+<link rel="stylesheet" href="js/leaflet/leaflet.css" type="text/css"/>
+<link rel="stylesheet" href="js/leaflet/leaflet-search.css" />
+<script type="text/javascript" src="js/leaflet/leaflet.js"></script>
+<script src="js/leaflet/leaflet-search.js"></script>
+</head>
+<body>
+	<div id="map"></div>
+	<script type="text/javascript">
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const worldid = urlParams.get('worldid');
+var jsonPlanetData,jsonShopData,map,xmlhttp,pngMapSize,markersLayer;
+
+console.log("Loading data for 'worldid' "+worldid);
+
+function loadPlanetData(){
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            jsonPlanetData = JSON.parse(this.responseText);
+            console.log(jsonPlanetData.display_name+" planet data loaded, creating map.");
+            loadMap();        
+        };
+    };
+    xmlhttp.open("GET", "https://api.boundlexx.app/api/v1/worlds/" + worldid, true);
+    xmlhttp.send();
+};
+
+function loadMap(){
+    switch (jsonPlanetData.size) {
+      case 192:
+        pngMapSize=1536;
+        break;
+      case 288:
+        pngMapSize=2304;
+        break;
+      case 384:
+        pngMapSize=3072;
+    }
+    console.log("Planet map source size "+(pngMapSize*2)+"px x "+(pngMapSize*2)+"px");
+    map = L.map('map', {
+        crs: L.CRS.Simple,
+        minZoom: -3
+    });
+    
+	var bounds = [[-pngMapSize,-pngMapSize], [pngMapSize,pngMapSize]];
+	var image = L.imageOverlay(jsonPlanetData.atlas_image_url, bounds).addTo(map);
+	map.fitBounds(bounds);
+    loadSearchBox();
+    loadShopData();
+};    
+
+function loadShopData(){
+var x;
+xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function() {
+  if (this.readyState == 4 && this.status == 200) {
+    jsonShopData = JSON.parse(this.responseText);
+    for (x in jsonShopData.results) {
+
+		var marker = new L.Marker(new L.latLng([ jsonShopData.results[x].location.z, jsonShopData.results[x].location.x ]), {title: jsonShopData.results[x].item.name+" ("+jsonShopData.results[x].price+"c)"} );
+		marker.bindPopup('<b>'+jsonShopData.results[x].item.name+' ('
+        +jsonShopData.results[x].price+'c)</b><br>'
+        +'Beacon: '+jsonShopData.results[x].beacon_name+'<br>'
+        +'Location: '+ jsonShopData.results[x].location.z +"N, " +jsonShopData.results[x].location.x +"E, " +jsonShopData.results[x].location.y+'<br>'
+        +'Price: '+ jsonShopData.results[x].price+'<br>'
+        +'Count: '+ jsonShopData.results[x].item_count+'<br>'
+        );
+		markersLayer.addLayer(marker);
+        
+       
+    
+    }
+
+  }
+};
+xmlhttp.open("GET", "https://api.boundlexx.app/api/v1/worlds/375/shop-stands/", true);
+xmlhttp.send();
+};
+
+function loadSearchBox(){
+	markersLayer = new L.LayerGroup();	//layer contain searched elements
+	map.addLayer(markersLayer);
+
+	map.addControl( new L.Control.Search({
+		layer: markersLayer,
+		buildTip: customTip,
+		initial: false,
+		zoom: 4
+	}) );
+}
+function loadSearchBoxOld(){
+	markersLayer = new L.LayerGroup();	//layer contain searched elements	
+	map.addLayer(markersLayer);
+
+	map.addControl( new L.Control.Search({
+		position:'topright',		
+		layer: markersLayer,
+		initial: false,
+		zoom: 4,
+		marker: false
+	}) );
+};
+	function customTip(text,val) {
+		return '<a href="#">'+text+'</a>';
+	}
+
+
+
+loadPlanetData();
+	</script>
+    
+    <p id="PlanetName"></p>
+    <p id="OtherInfo"></p>
+   
+</body>
+</html>
