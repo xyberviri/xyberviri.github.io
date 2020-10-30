@@ -20,7 +20,7 @@
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const worldid = urlParams.get('worldid');
-var jsonPlanetData,jsonShopData,map,xmlhttp,pngMapSize,markersLayer;
+var jsonPlanetData,jsonShopData,map,xmlhttp,pngMapSize,markersLayer,;
 
 console.log("Loading data for 'worldid' "+worldid);
 
@@ -85,7 +85,7 @@ xmlhttp.onreadystatechange = function() {
 
   }
 };
-xmlhttp.open("GET", "https://api.boundlexx.app/api/v1/worlds/375/shop-stands/", true);
+xmlhttp.open("GET", "https://api.boundlexx.app/api/v1/worlds/"+ worldid +"/shop-stands/", true);
 xmlhttp.send();
 };
 
@@ -100,18 +100,7 @@ function loadSearchBox(){
 		zoom: 4
 	}) );
 }
-function loadSearchBoxOld(){
-	markersLayer = new L.LayerGroup();	//layer contain searched elements	
-	map.addLayer(markersLayer);
 
-	map.addControl( new L.Control.Search({
-		position:'topright',		
-		layer: markersLayer,
-		initial: false,
-		zoom: 4,
-		marker: false
-	}) );
-};
 	function customTip(text,val) {
 		return '<a href="#">'+text+'</a>';
 	}
@@ -121,7 +110,6 @@ function loadSearchBoxOld(){
 loadPlanetData();
 	</script>
     
-    <p id="PlanetName"></p>
     <p id="OtherInfo"></p>
    
 </body>
