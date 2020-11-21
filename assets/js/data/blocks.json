@@ -1,0 +1,314 @@
+[
+  {
+    "value": 13,
+    "label": "Verdant Grass"
+  },
+  {
+    "value": 3085,
+    "label": "Barbed Grass"
+  },
+  {
+    "value": 6157,
+    "label": "Gnarled Grass"
+  },
+  {
+    "value": 10794,
+    "label": "Metamorphic Rock"
+  },
+  {
+    "value": 10802,
+    "label": "Sedimentary Rock"
+  },
+  {
+    "value": 10798,
+    "label": "Igneous Rock"
+  },
+  {
+    "value": 10838,
+    "label": "Lustrous Trunk"
+  },
+  {
+    "value": 10830,
+    "label": "Ancient Trunk"
+  },
+  {
+    "value": 10834,
+    "label": "Twisted Trunk"
+  },
+  {
+    "value": 10870,
+    "label": "Growth"
+  },
+  {
+    "value": 10866,
+    "label": "Mould"
+  },
+  {
+    "value": 9555,
+    "label": "Gleam"
+  },
+  {
+    "value": 9838,
+    "label": "Gladeflower"
+  },
+  {
+    "value": 9839,
+    "label": "Cloneflower"
+  },
+  {
+    "value": 9840,
+    "label": "Spineflower"
+  },
+  {
+    "value": 9841,
+    "label": "Ghostflower"
+  },
+  {
+    "value": 10774,
+    "label": "Traveller's Perch"
+  },
+  {
+    "value": 10775,
+    "label": "Trumpet Root"
+  },
+  {
+    "value": 10776,
+    "label": "Rosetta Nox"
+  },
+  {
+    "value": 10777,
+    "label": "Desert Sword"
+  },
+  {
+    "value": 10778,
+    "label": "Spineback Plant"
+  },
+  {
+    "value": 10779,
+    "label": "Twisted Aloba"
+  },
+  {
+    "value": 10780,
+    "label": "Stardrop Plant"
+  },
+  {
+    "value": 10781,
+    "label": "Oortian's Staff"
+  },
+  {
+    "value": 10788,
+    "label": "Mottled Tar Spot Fungus"
+  },
+  {
+    "value": 10789,
+    "label": "Clustered Tongue Fungus"
+  },
+  {
+    "value": 10790,
+    "label": "Branch Funnel Fungus"
+  },
+  {
+    "value": 10791,
+    "label": "Tinted-burst Fungus"
+  },
+  {
+    "value": 10792,
+    "label": "Weeping Waxcap Fungus"
+  },
+  {
+    "value": 10793,
+    "label": "Glow Cap Fungus"
+  },
+  {
+    "value": 10806,
+    "label": "Glacier"
+  },
+  {
+    "value": 10810,
+    "label": "Sand"
+  },
+  {
+    "value": 10814,
+    "label": "Gravel"
+  },
+  {
+    "value": 10826,
+    "label": "Waxy Foliage"
+  },
+  {
+    "value": 10818,
+    "label": "Lush Foliage"
+  },
+  {
+    "value": 10822,
+    "label": "Exotic Foliage"
+  },
+  {
+    "value": 10842,
+    "label": "Ice"
+  },
+  {
+    "value": 10846,
+    "label": "Mud"
+  },
+  {
+    "value": 11584,
+    "label": "Silty Soil"
+  },
+  {
+    "value": 11588,
+    "label": "Clay Soil"
+  },
+  {
+    "value": 11592,
+    "label": "Peaty Soil"
+  },
+  {
+    "value": 10850,
+    "label": "Ash"
+  },
+  {
+    "value": 10854,
+    "label": "Sponge"
+  },
+  {
+    "value": 10858,
+    "label": "Tangle"
+  },
+  {
+    "value": 10862,
+    "label": "Thorns"
+  },
+  {
+    "value": 32778,
+    "label": "Hard Coal"
+  },
+  {
+    "value": 32777,
+    "label": "Medium Coal"
+  },
+  {
+    "value": 32779,
+    "label": "Soft Coal"
+  },
+  {
+    "value": 32800,
+    "label": "Rough Amethyst"
+  },
+  {
+    "value": 32804,
+    "label": "Rough Emerald"
+  },
+  {
+    "value": 32803,
+    "label": "Rough Diamond"
+  },
+  {
+    "value": 32807,
+    "label": "Rough Ruby"
+  },
+  {
+    "value": 32809,
+    "label": "Rough Topaz"
+  },
+  {
+    "value": 32808,
+    "label": "Rough Sapphire"
+  },
+  {
+    "value": 33081,
+    "label": "Small Fossil"
+  },
+  {
+    "value": 33082,
+    "label": "Medium Fossil"
+  },
+  {
+    "value": 33083,
+    "label": "Large Fossil"
+  },
+  {
+    "value": 32785,
+    "label": "Copper Ore"
+  },
+  {
+    "value": 32787,
+    "label": "Iron Ore"
+  },
+  {
+    "value": 32788,
+    "label": "Silver Ore"
+  },
+  {
+    "value": 32786,
+    "label": "Gold Ore"
+  },
+  {
+    "value": 32789,
+    "label": "Titanium Ore"
+  },
+  {
+    "value": 33078,
+    "label": "Ancient Tech Component"
+  },
+  {
+    "value": 33080,
+    "label": "Ancient Tech Remnant"
+  },
+  {
+    "value": 33079,
+    "label": "Ancient Tech Device"
+  },
+  {
+    "value": 10782,
+    "label": "Basic Boulder"
+  },
+  {
+    "value": 11635,
+    "label": "Tuber Plant"
+  },
+  {
+    "value": 10784,
+    "label": "Boulder Tower"
+  },
+  {
+    "value": 11641,
+    "label": "Kranut Plant"
+  },
+  {
+    "value": 10787,
+    "label": "Tapered Boulder"
+  },
+  {
+    "value": 11645,
+    "label": "Combustion Fraction"
+  },
+  {
+    "value": 11642,
+    "label": "Starberry Vine"
+  },
+  {
+    "value": 11632,
+    "label": "Oortian Rice"
+  },
+  {
+    "value": 11633,
+    "label": "Oorum Wheat"
+  },
+  {
+    "value": 11634,
+    "label": "Ancient Oat"
+  },
+  {
+    "value": 11643,
+    "label": "Glossy Starberry Vine"
+  },
+  {
+    "value": 10783,
+    "label": "Beanstalk Boulder"
+  },
+  {
+    "value": 11637,
+    "label": "Exotic Tuber Plant"
+  }
+]
