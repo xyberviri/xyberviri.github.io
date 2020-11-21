@@ -1,216 +1,49 @@
-<!DOCTYPE HTML>
-<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
-  <title>Portal Seekers</title>
-  <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport" />
-  <link href="assets/css/main.css" rel="stylesheet" />
-  <link href="assets/css/custom.css" rel="stylesheet" />
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <script src="assets/js/vendor/jquery.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <noscript><link href="assets/css/noscript.css" rel="stylesheet" /></noscript>
+	<title>xyberviri.github.io</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<style>
+  body {
+    overflow:hidden;
+    background-color: black;
+    color: GhostWhite;
+  }
+  h1 {
+    color: Snow;
+  }
+
+.outer {
+    display: table;
+    position: absolute;
+    height: 90%;
+    width: 90%;
+  }
+
+.middle {
+    display: table-cell;
+    vertical-align: top;	
+    background-image: url("eyes.png");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position:center top;
+  }
+
+.inner {
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>
 </head>
 <body>
-
-<div id="left-nav">
-
-  <i id="close-filter-btn" class="fas fa-times fa-2x"></i>
-
-  <div class="filter-section">
-    <form class="filters" onkeydown="return event.key !== 'Enter';">
-      <div class="fields">
-        <div class="field">
-          <label for="planet-type">Type</label>
-          <select id="planet-type">
-            <option value="all">All</option>
-            <option value="home">Home</option>
-            <option value="active exo">Active Exo</option>
-            <option value="past exo">Past Exo</option>
-            <option value="sovereign">Sovereign</option>
-            <option value="creative">Creative</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="planet-tier">Tier</label>
-          <select id="planet-tier">
-            <option value="all">All</option>
-            <option value="t1">Placid (T1)</option>
-            <option value="t2">Temperate (T2)</option>
-            <option value="t3">Rugged (T3)</option>
-            <option value="t4">Inhospitable (T4)</option>
-            <option value="t5">Turbulent (T5)</option>
-            <option value="t6">Fierce (T6)</option>
-            <option value="t7">Savage (T7)</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="planet-atmosphere">Atmosphere</label>
-          <select id="planet-atmosphere">
-            <option value="all">All</option>
-            <option value="lush">Lush</option>
-            <option value="coal">Coal</option>
-            <option value="metal">Metal</option>
-            <option value="toxic">Toxic</option>
-            <option value="corrosive">Corrosive</option>
-            <option value="blast">Blast</option>
-            <option value="burn">Burn</option>
-            <option value="shock">Shock</option>
-            <option value="chill">Chill</option>
-            <option value="darkmatter">Darkmatter</option>
-          </select>
-        </div>
-
-      </div>
-    </form>
-  </div>
-
-  <div class="sort-section">
-    <form class="sorts" onkeydown="return event.key !== 'Enter';">
-      <div class="fields">
-
-        <div class="field">
-          <label for="sort-type">Sort By</label>
-          <select id="sort-type">
-            <option value=""></option>
-            <option value="Rough Diamond">Diamond %</option>
-            <option value="Rough Ruby">Ruby %</option>
-            <option value="Rough Topaz">Topaz %</option>
-            <option value="Rough Sapphire">Sapphire %</option>
-            <option value="Rough Emerald">Emerald %</option>
-            <option value="Rough Amethyst">Amethyst %</option>
-            <option value="Copper Ore">Copper %</option>
-            <option value="Iron Ore">Iron %</option>
-            <option value="Silver Ore">Silver %</option>
-            <option value="Gold Ore">Gold %</option>
-            <option value="Titanium Ore">Titanium %</option>
-            <option value="Soft Coal">Soft Coal %</option>
-            <option value="Medium Coal">Medium Coal %</option>
-            <option value="Hard Coal">Hard Coal %</option>
-            <option value="Ancient Tech Remnant">Ancient Tech Remnant %</option>
-            <option value="Ancient Tech Component">Ancient Tech Component %</option>
-            <option value="Ancient Tech Device">Ancient Tech Device %</option>
-            <option value="Combustion Fraction">Combustion Fraction %</option>
-          </select>
-        </div>
-
-      </div>
-    </form>
-  </div>
-
-  <div class="search-section">
-    <form class="search" onkeydown="return event.key !== 'Enter';">
-      <div class="fields">
-        <div class="field">
-          <label for="color-search">Pick a Color</label>
-          <input id="color-search" type="text"/>
-          <input id="color-search-id" type="hidden"/>
-        </div>
-        <div class="field">
-          <label for="block-search">Pick a Block</label>
-          <input id="block-search" type="text"/>
-          <input id="block-search-id" type="hidden"/>
-        </div>
-      </div>
-
-      <button id="color-item-search-btn" type="button">Search</button>
-
-    </form>
-  </div>
-
-</div>
-
-<section class="data-bar">
-  <div id="explorer-btns">
-    <i id="filter-btn" class="fas fa-filter fa-lg"></i>
-    <i id="search-btn" class="fas fa-search fa-lg"></i>
-    <i id="sort-btn" class="fas fa-sort fa-lg"></i>
-    <i id="watcher-btn" class="fas fa-binoculars fa-lg"></i>
-    <div class="count">Please wait while we pull the latest data...</div>
-  </div>
-</section>
-
-<div class="watcher-bg">
-  <article id="watcher">
-
-    <i id="close-watcher-btn" class="fas fa-times fa-2x"></i>
-
-    <form class="filters" onkeydown="return event.key !== 'Enter';">
-      <div class="fields">
-        <div class="field">
-          <label for="block-type">Check For Colors</label>
-          <select id="block-type">
-            <option value=""></option>
-            <option value="9555">Gleam</option>
-            <option value="10798">Igneous Rock</option>
-            <option value="10794">Metamorphic Rock</option>
-            <option value="10802">Sedimentary Rock</option>
-            <option value="10830">Ancient Trunk</option>
-            <option value="10838">Lustrous Trunk</option>
-            <option value="10834">Twisted Trunk</option>
-            <option value="10814">Gravel</option>
-            <option value="10810">Sand</option>
-          </select>
-        </div>
-      </div>
-    </form>
-
-    <div class="watcher-colors">
-
+<div class="outer">
+  <div class="middle">
+    <div class="inner">
+	<h1>Status:</h1>
+	<p>Currently Avalible</p>
     </div>
-  </article>
+  </div>
 </div>
 
-<div id="planet-explorer">
-  <section class="planet-grid">
-    <div class="planet" :data-id="planet.id" v-for="planet in planets">
-      <div class="planet-name"><h4 v-html="planet.html_name"></h4></div>
-      <i class="resource-btn fas fa-gem fa"></i>
-      <i class="block-btn fas fa-cubes fa-lg"></i>
-      <h5 class="planet-type">{{ getPlanetType(planet) }}</h5>
-      <h5 class="planet-tier">{{ getPlanetTier(planet) }}</h5>
-      <h5 class="planet-atmosphere">{{ planet.world_type }}</h5>
-      <div class="planet-blocks-card" data-loaded="false">
-        <div class="colors">
-          <div class="color-row" v-for="color in planet.block_colors">
-            <div class="block" v-bind:data-block-id="color.item.game_id">{{ color.item.title }}</div>
-            <div class="color">{{ color.color.color_name + ' (' + color.color.color_id + ')' }}</div>
-            <div class="color-square" v-bind:style="{ background: color.color.color_hex }">{{ color.color.color_hex }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="planet-resources-card" data-loaded="false">
-        <div v-if="planet.resources">
-          <div class="resource-row" v-for="resource in planet.resources">
-            <div class="resource-name">{{ getItemTitle(resource.item.game_id) }}</div>
-            <div class="resource-percent">{{ resource.percentage + '%' }}</div>
-            <div class="resource-count">{{ resource.count }}</div>
-            <div class="resource-avg-per-chunk">{{ resource.average_per_chunk.as_str }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
 
-<div id="error-modal" hidden>
-  <p>Unfortunately, something went wrong.  Click below to try again or refresh the page...</p>
-  <button id="retry-btn">Retry</button>
-</div>
-
-<!-- Scripts -->
-<script src="assets/js/vendor/msgpack.min.js"></script>
-<script src="assets/js/vendor/moment.min.js"></script>
-<script src="assets/js/browser.min.js"></script>
-<script src="assets/js/breakpoints.min.js"></script>
-<script src="node_modules/vue/dist/vue.min.js"></script>
-<script src="node_modules/gasparesganga-jquery-loading-overlay/dist/loadingoverlay.js"></script>
-<script src="assets/js/util.js"></script>
-<script src="assets/js/main.js"></script>
-<script src="assets/js/explorer.js"></script>
-<script src="https://kit.fontawesome.com/49f7ee01e1.js" crossorigin="anonymous"></script>
-
-</body>
-</html>
+</body></html>
