@@ -57,8 +57,8 @@ function loadMap(){
 	var bounds = [[-pngMapSize,-pngMapSize], [pngMapSize,pngMapSize]];
 	var image = L.imageOverlay(jsonPlanetData.atlas_image_url, bounds).addTo(map);
 	map.fitBounds(bounds);
-    loadSearchBox();
-    loadShopData();
+    //loadSearchBox();
+    //loadShopData();
 };    
 
 function loadShopData(){
