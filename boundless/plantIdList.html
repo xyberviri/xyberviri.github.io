@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+</head>
+<body>
+
+<h2>List of public planets with their ID's</h2>
+
+<p id="idlist"></p>
+
+<script>
+var xmlhttp, jsonData, x, txt = "";
+xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function() {
+  if (this.readyState == 4 && this.status == 200) {
+    jsonData = JSON.parse(this.responseText);
+    jsonData.sort(function(a, b){return a.id - b.id});
+    txt += "<table border='1'>"
+    for (x in jsonData) {
+      txt += "<tr><td>" + jsonData[x].displayName + "</td><td>" + jsonData[x].id
+      + "</td><td><a href='https://www.boundlexx.app/worlds/" + jsonData[x].id + "/' target='_blank'>View on boundlexx.app</a>"
+      + "</td></tr>";
+    }
+    txt += "</table>"    
+    document.getElementById("idlist").innerHTML = txt;
+  }
+};
+xmlhttp.open("GET", "https://ds.playboundless.com:8902/list-gameservers/", true);
+xmlhttp.send();
+</script>
+
+
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+
+</body>
+</html>
