@@ -17,11 +17,11 @@ xmlhttp.onreadystatechange = function() {
   if (this.readyState == 4 && this.status == 200) {
     jsonData = JSON.parse(this.responseText);
     jsonData.sort(function(a, b){return a.id - b.id});
-    txt += "<table border='1'>"
+    txt += "<table border='0'>"
     for (x in jsonData) {
       txt += "<tr><td>" + jsonData[x].displayName + "</td><td>" + jsonData[x].id
-      + "</td><td><a href='https://www.boundlexx.app/worlds/" + jsonData[x].id + "/' target='_blank'>boundlexx.app</a>"
-      + "</td><td><a href='https://boundlessinfo.com/worlds/" + jsonData[x].id + "/details' target='_blank'>boundlessinfo.com</a>"
+      + "</td><td><a href='https://www.boundlexx.app/worlds/" + jsonData[x].id + "/' target='_blank'>boundlexx</a>"
+      + "</td><td><a href='https://boundlessinfo.com/worlds/" + jsonData[x].id + "/details' target='_blank'>boundlessinfo</a>"
       + "</td></tr>";
     }
     txt += "</table>"    
