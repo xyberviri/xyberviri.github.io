@@ -332,7 +332,8 @@
     <div class="content">
       <section class="panel">
         <h2 class="section-title">Target pattern</h2>
-        <div class="grid" id="checkboxGrid"></div>
+        <div class="grid" id="checkboxGrid">
+        </div>
         <div class="buttons">
           <button class="primary" id="solveBtn">Solve</button>
           <button class="secondary" id="clearBtn" type="button">Clear</button>
@@ -376,24 +377,27 @@
           <p class="status">Pick the black server triangles and press Solve.</p>
         </div>
 
-        <div class="muted-box">
-          Button order used by this solver: <code>R1, R2, R3, L2, L3, L1</code>.<br>
-          It brute-forces all 64 press combinations and returns the shortest valid solution.
+        <div class="muted-box">          
+          It brute-forces all 64 press combinations and returns the shortest valid solution.<br>
+          <code>L1→R1,R3</code>,<br><code>L2→R1,R2,L3</code>,<br><code>L3→L1,R2</code>,<br>
+          <code>R1→L1,L3,R2</code>,<br><code>R2→L1,R3</code>,<br><code>R3→L3,R1,R3</code>.<br><br>
+          So far nothing toggles <code>L2</code>.<br> If this changes notify Xyberviri.<br>
         </div>
       </section>
     </div>
   </div>
 
   <script>
-    const BUTTONS = ["L1", "R1", "L2", "R2", "L3", "R3" ];
+    const BUTTONS = ["L1", "L2", "L3", "R1", "R2", "R3"];
+    const BUTTON_ORDER = ["L1", "R1", "L2", "R2", "L3", "R3"];
 
     const TOGGLES = {
-      R1: ["R3", "L2"],
-      R2: ["R1", "L2", "L3"],
-      R3: ["R2", "R3", "L3"],
-      L2: ["R2", "R3"],
-      L3: ["R1", "L2"],
-      L1: ["R1", "R2", "L3"],
+      L1: ["R1", "R3"],
+      L2: ["R1", "R2", "R3"],
+      L3: ["L1", "R2"],
+      R1: ["L1", "L3", "R2"],
+      R2: ["L1", "R3"],
+      R3: ["L3", "R1", "R3"],
     };
 
     const checkboxGrid = document.getElementById("checkboxGrid");
@@ -502,7 +506,7 @@
 
     function loadDemo() {
       clearAll();
-      const demo = ["R3", "L2", "L3"];
+      const demo = ["R3", "L1", "L3"];
       for (const name of demo) {
         const checkbox = document.querySelector(`input[data-name="${name}"]`);
         if (checkbox) checkbox.checked = true;
@@ -520,7 +524,7 @@
         L1: "Left 1",
       };
 
-      for (const name of BUTTONS) {
+      for (const name of BUTTON_ORDER) {
         const label = document.createElement("label");
         label.className = "check-card";
         label.innerHTML = `
