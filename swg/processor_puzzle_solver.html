@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Processor Puzzle Solver</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #1f2430;
+      --text: #e8ecf1;
+      --muted: #9da7b3;
+      --accent: #7cc7ff;
+      --accent-2: #9d7cff;
+      --good: #7ee787;
+      --bad: #ff7b72;
+      --border: #2d3440;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1b2030 0%, var(--bg) 50%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(920px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 28px 28px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 3vw, 2.3rem);
+      line-height: 1.1;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.5;
+      max-width: 65ch;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 0;
+    }
+
+    .panel {
+      padding: 28px;
+    }
+
+    .panel + .panel {
+      border-left: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .check-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+      user-select: none;
+    }
+
+    .check-card:hover {
+      transform: translateY(-1px);
+      border-color: #465063;
+      background: var(--panel-2);
+    }
+
+    .check-card input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-2);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .check-card strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .check-card span {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #071018;
+    }
+
+    .secondary {
+      background: #242a36;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .tri-layout {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      padding-bottom: 48px;
+      margin-bottom: 18px;
+    }
+
+    .tri-title {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .triangles {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 1px; /* tighter horizontal gap */
+      align-items: center;
+      justify-items: center;
+    }
+
+    .column {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .server-group {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      transform-origin: center;
+    }
+
+    .server-group.left-rotated {
+      transform: rotate(26deg) translateX(10px); /* nudge toward center */
+    }
+
+    .server-group.right-rotated {
+      transform: rotate(-26deg) translateX(-10px); /* nudge toward center */
+    }
+
+    .server-group.left-rotated .triangle,
+    .server-group.right-rotated .triangle {
+      transform: rotate(0deg);
+    }
+
+    .server-group.left-rotated .triangle span,
+    .server-group.right-rotated .triangle span {
+      display: inline-block;
+    }
+
+    .triangle-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .triangle {
+      width: 58px;
+      height: 58px;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      background: #ffffff;
+      border: 2px solid #5b6578;
+      box-shadow: inset 0 -8px 18px rgba(0,0,0,0.25);
+      display: grid;
+      place-items: center;
+      color: #12151c;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .triangle span {
+      display: inline-block;
+    }
+
+    .server-group.left-rotated .triangle span {
+      transform: rotate(-26deg);
+    }
+
+    .server-group.right-rotated .triangle span {
+      transform: rotate(26deg);
+    }
+
+    .triangle.on {
+      background: #000000;
+      color: #f8fbff;
+      border-color: #8e98ac;
+    }
+
+    .result {
+      min-height: 144px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .result h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .status {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .status.good { color: var(--good); }
+    .status.bad { color: var(--bad); }
+
+    .pill-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      background: rgba(124, 199, 255, 0.12);
+      color: var(--text);
+      border: 1px solid rgba(124, 199, 255, 0.25);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+    }
+
+    .muted-box {
+      margin-top: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.5;
+    }
+
+    code {
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 2px 6px;
+      color: #d8e7ff;
+    }
+
+    @media (max-width: 760px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .panel + .panel {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1>Processor Puzzle Solver</h1>
+      <p class="sub">
+        Tick the server triangles that are black, then hit <strong>Solve</strong>. The page will show one valid set of player button presses based on the Lua toggle logic.
+      </p>
+    </div>
+
+    <div class="content">
+      <section class="panel">
+        <h2 class="section-title">Target pattern</h2>
+        <div class="grid" id="checkboxGrid"></div>
+        <div class="buttons">
+          <button class="primary" id="solveBtn">Solve</button>
+          <button class="secondary" id="clearBtn" type="button">Clear</button>
+          <button class="secondary" id="demoBtn" type="button">Load Demo</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="section-title">Result</h2>
+
+        <div class="tri-layout">
+          <p class="tri-title">Server-side black triangles</p>
+          <div class="triangles">
+            <div class="server-group left-rotated">
+              <div class="column">
+                <div class="triangle-row">
+                  <div class="triangle" data-tri="L1"><span>L1</span></div>
+                </div>
+                <div class="triangle-row">
+                  <div class="triangle" data-tri="L2"><span>L2</span></div>
+                  <div class="triangle" data-tri="L3"><span>L3</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="server-group right-rotated">
+              <div class="column">
+                <div class="triangle-row">
+                  <div class="triangle" data-tri="R1"><span>R1</span></div>
+                </div>
+                <div class="triangle-row">
+                  <div class="triangle" data-tri="R3"><span>R3</span></div>
+                  <div class="triangle" data-tri="R2"><span>R2</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result" id="resultBox">
+          <h3>Waiting for input</h3>
+          <p class="status">Pick the black server triangles and press Solve.</p>
+        </div>
+
+        <div class="muted-box">
+          Button order used by this solver: <code>R1, R2, R3, L2, L3, L1</code>.<br>
+          It brute-forces all 64 press combinations and returns the shortest valid solution.
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const BUTTONS = ["L1", "R1", "L2", "R2", "L3", "R3" ];
+
+    const TOGGLES = {
+      R1: ["R3", "L2"],
+      R2: ["R1", "L2", "L3"],
+      R3: ["R2", "R3", "L3"],
+      L2: ["R2", "R3"],
+      L3: ["R1", "L2"],
+      L1: ["R1", "R2", "L3"],
+    };
+
+    const checkboxGrid = document.getElementById("checkboxGrid");
+    const resultBox = document.getElementById("resultBox");
+    const solveBtn = document.getElementById("solveBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const demoBtn = document.getElementById("demoBtn");
+    const triangleEls = [...document.querySelectorAll(".triangle")];
+
+    function createZeroState() {
+      return { R1: 0, R2: 0, R3: 0, L2: 0, L3: 0, L1: 0 };
+    }
+
+    function pressButton(state, button) {
+      const next = { ...state };
+      for (const key of TOGGLES[button]) {
+        next[key] ^= 1;
+      }
+      return next;
+    }
+
+    function stateToKey(state) {
+      return BUTTONS.map((b) => state[b] ? "1" : "0").join("");
+    }
+
+    function solvePuzzle(target) {
+      const targetKey = stateToKey(target);
+      const zero = createZeroState();
+      let best = null;
+
+      for (let mask = 0; mask < (1 << BUTTONS.length); mask++) {
+        let state = { ...zero };
+        const presses = [];
+
+        for (let i = 0; i < BUTTONS.length; i++) {
+          if (mask & (1 << i)) {
+            const button = BUTTONS[i];
+            state = pressButton(state, button);
+            presses.push(button);
+          }
+        }
+
+        if (stateToKey(state) === targetKey) {
+          if (!best || presses.length < best.presses.length) {
+            best = { reachable: true, presses, target: { ...target } };
+          }
+        }
+      }
+
+      return best || { reachable: false, presses: [], target: { ...target } };
+    }
+
+    function getSelectedState() {
+      const state = createZeroState();
+      for (const name of BUTTONS) {
+        const checkbox = document.querySelector(`input[data-name="${name}"]`);
+        state[name] = checkbox.checked ? 1 : 0;
+      }
+      return state;
+    }
+
+    function updateTrianglePreview() {
+      const state = getSelectedState();
+      for (const el of triangleEls) {
+        const name = el.dataset.tri;
+        el.classList.toggle("on", Boolean(state[name]));
+      }
+    }
+
+    function renderResult(result) {
+      const active = BUTTONS.filter((b) => result.target[b] === 1);
+
+      if (!result.reachable) {
+        resultBox.innerHTML = `
+          <h3>Not reachable</h3>
+          <p class="status bad">That target pattern does not seem reachable with this toggle logic. Rude little gremlin of a puzzle.</p>
+          <div class="pill-wrap">${active.map((x) => `<span class="pill">${x}</span>`).join("") || '<span class="pill">No black triangles</span>'}</div>
+        `;
+        return;
+      }
+
+      const pressesHtml = result.presses.length
+        ? result.presses.map((x) => `<span class="pill">${x}</span>`).join("")
+        : '<span class="pill">No presses needed</span>';
+
+      resultBox.innerHTML = `
+        <h3>Solution found</h3>
+        <p class="status good">Press these player buttons to match the selected server pattern.</p>
+        <div class="pill-wrap">${pressesHtml}</div>
+        <div class="muted-box" style="margin-top:16px;">
+          Selected black server triangles: ${active.length ? active.join(", ") : "none"}
+        </div>
+      `;
+    }
+
+    function clearAll() {
+      for (const checkbox of document.querySelectorAll("input[type='checkbox']")) {
+        checkbox.checked = false;
+      }
+      updateTrianglePreview();
+      resultBox.innerHTML = `
+        <h3>Waiting for input</h3>
+        <p class="status">Pick the black server triangles and press Solve.</p>
+      `;
+    }
+
+    function loadDemo() {
+      clearAll();
+      const demo = ["R3", "L2", "L3"];
+      for (const name of demo) {
+        const checkbox = document.querySelector(`input[data-name="${name}"]`);
+        if (checkbox) checkbox.checked = true;
+      }
+      updateTrianglePreview();
+    }
+
+    function buildCheckboxes() {
+      const labels = {
+        R1: "Right 1",
+        R2: "Right 2",
+        R3: "Right 3",
+        L2: "Left 2",
+        L3: "Left 3",
+        L1: "Left 1",
+      };
+
+      for (const name of BUTTONS) {
+        const label = document.createElement("label");
+        label.className = "check-card";
+        label.innerHTML = `
+          <input type="checkbox" data-name="${name}" />
+          <div>
+            <strong>${name}</strong>
+            <span>${labels[name]}</span>
+          </div>
+        `;
+        checkboxGrid.appendChild(label);
+      }
+
+      checkboxGrid.addEventListener("change", updateTrianglePreview);
+    }
+
+    solveBtn.addEventListener("click", () => {
+      const target = getSelectedState();
+      const result = solvePuzzle(target);
+      renderResult(result);
+    });
+
+    clearBtn.addEventListener("click", clearAll);
+    demoBtn.addEventListener("click", loadDemo);
+
+    buildCheckboxes();
+    updateTrianglePreview();
+  </script>
+</body>
+</html>
