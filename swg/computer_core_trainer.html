@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FS Computer Core — Puzzle Trainer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --green: #00ff88;
+    --green-dim: #00aa55;
+    --green-glow: rgba(0,255,136,0.15);
+    --amber: #ffaa00;
+    --amber-dim: #aa6600;
+    --red: #ff3333;
+    --red-dim: #aa1111;
+    --blue: #44aaff;
+    --blue-dim: #2255aa;
+    --yellow: #ffee00;
+    --yellow-dim: #aa9900;
+    --bg: #060c08;
+    --panel: #080f0b;
+    --border: #1a3322;
+    --text: #88ccaa;
+    --text-dim: #3a6644;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* CRT vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .main-container {
+    width: 100%;
+    max-width: 760px;
+    animation: bootup 0.8s ease-out;
+  }
+
+  @keyframes bootup {
+    from { opacity: 0; transform: scaleY(0.02); }
+    to { opacity: 1; transform: scaleY(1); }
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    animation: scan 4s linear infinite;
+  }
+
+  @keyframes scan {
+    to { left: 200%; }
+  }
+
+  .header-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px var(--green), 0 0 40px rgba(0,255,136,0.3);
+    margin-bottom: 4px;
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* Integrity bar */
+  .integrity-section {
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    background: var(--panel);
+  }
+
+  .integrity-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .integrity-value {
+    color: var(--amber);
+    text-shadow: 0 0 10px var(--amber);
+    transition: color 0.5s;
+  }
+
+  .integrity-value.critical { color: var(--red); text-shadow: 0 0 10px var(--red); animation: flicker 0.5s infinite; }
+
+  .integrity-bar-outer {
+    height: 10px;
+    background: #0a150e;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  .integrity-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-dim), var(--green));
+    transition: width 0.5s ease, background 0.5s;
+    position: relative;
+  }
+
+  .integrity-bar-inner::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0;
+    width: 3px; height: 100%;
+    background: white;
+    box-shadow: 0 0 8px var(--green);
+  }
+
+  .integrity-bar-inner.warning { background: linear-gradient(90deg, var(--amber-dim), var(--amber)); }
+  .integrity-bar-inner.warning::after { box-shadow: 0 0 8px var(--amber); }
+  .integrity-bar-inner.critical { background: linear-gradient(90deg, var(--red-dim), var(--red)); }
+  .integrity-bar-inner.critical::after { box-shadow: 0 0 8px var(--red); }
+
+  /* Indicators */
+  .indicators-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+  }
+
+  .indicator {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #1a3322;
+    background: #030806;
+    position: relative;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0;
+  }
+
+  .indicator.lit {
+    background: #00ff88;
+    border-color: var(--green);
+    box-shadow: 0 0 18px var(--green), 0 0 36px rgba(0,255,136,0.4), inset 0 0 12px rgba(255,255,255,0.3);
+    animation: pulse-green 1.5s ease-in-out infinite;
+  }
+
+  .indicator.flicker {
+    animation: flicker 0.3s infinite;
+    border-color: var(--amber);
+    background: #221500;
+    box-shadow: 0 0 10px var(--amber);
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 18px var(--green), 0 0 36px rgba(0,255,136,0.4), inset 0 0 12px rgba(255,255,255,0.3); }
+    50% { box-shadow: 0 0 28px var(--green), 0 0 56px rgba(0,255,136,0.6), inset 0 0 18px rgba(255,255,255,0.4); }
+  }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    25% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+    75% { opacity: 0.2; }
+  }
+
+  .indicator-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    text-align: center;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 6px;
+  }
+
+  .indicator-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  /* Wire slots */
+  .config-section {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  .connections-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .connection-slot {
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    background: #060c08;
+    position: relative;
+  }
+
+  .connection-slot-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .wire-buttons {
+    display: flex;
+    gap: 6px;
+  }
+
+  .wire-btn {
+    flex: 1;
+    padding: 7px 4px;
+    border: 1px solid #1a3322;
+    background: #040a06;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .wire-btn:hover { border-color: var(--green-dim); color: var(--green); }
+
+  .wire-btn.selected-red {
+    background: rgba(255,51,51,0.15);
+    border-color: var(--red);
+    color: var(--red);
+    text-shadow: 0 0 8px var(--red);
+    box-shadow: inset 0 0 8px rgba(255,51,51,0.1);
+  }
+
+  .wire-btn.selected-blue {
+    background: rgba(68,170,255,0.12);
+    border-color: var(--blue);
+    color: var(--blue);
+    text-shadow: 0 0 8px var(--blue);
+    box-shadow: inset 0 0 8px rgba(68,170,255,0.1);
+  }
+
+  .wire-btn.selected-yellow {
+    background: rgba(255,238,0,0.1);
+    border-color: var(--yellow);
+    color: var(--yellow);
+    text-shadow: 0 0 8px var(--yellow);
+    box-shadow: inset 0 0 8px rgba(255,238,0,0.08);
+  }
+
+  .wire-btn.selected-none {
+    border-color: var(--text-dim);
+    color: var(--text-dim);
+  }
+
+  /* Action buttons */
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 14px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .action-btn:hover {
+    border-color: var(--green);
+    color: var(--green);
+    text-shadow: 0 0 10px var(--green);
+    background: var(--green-glow);
+  }
+
+  .action-btn:active { transform: scale(0.98); }
+
+  .action-btn.primary {
+    border-color: var(--amber);
+    color: var(--amber);
+    text-shadow: 0 0 8px rgba(255,170,0,0.5);
+  }
+
+  .action-btn.primary:hover {
+    background: rgba(255,170,0,0.1);
+    box-shadow: 0 0 20px rgba(255,170,0,0.2);
+  }
+
+  .action-btn.danger {
+    border-color: var(--red-dim);
+    color: #aa5555;
+  }
+
+  .action-btn.danger:hover {
+    border-color: var(--red);
+    color: var(--red);
+    text-shadow: 0 0 10px var(--red);
+    background: rgba(255,51,51,0.08);
+  }
+
+  /* Result log */
+  .log-section {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 16px;
+    margin-bottom: 16px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  .log-section::-webkit-scrollbar { width: 4px; }
+  .log-section::-webkit-scrollbar-track { background: #040a06; }
+  .log-section::-webkit-scrollbar-thumb { background: var(--green-dim); }
+
+  .log-entry {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #0a150e;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .log-entry:last-child { border-bottom: none; margin-bottom: 0; }
+
+  .log-attempt {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .log-wires {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .log-wire-chip {
+    padding: 2px 8px;
+    font-size: 10px;
+    border: 1px solid;
+    letter-spacing: 1px;
+  }
+
+  .log-wire-chip.red { border-color: var(--red); color: var(--red); }
+  .log-wire-chip.blue { border-color: var(--blue); color: var(--blue); }
+  .log-wire-chip.yellow { border-color: var(--yellow); color: var(--yellow); }
+  .log-wire-chip.none { border-color: var(--text-dim); color: var(--text-dim); }
+
+  .log-result {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+  }
+
+  .result-lit {
+    color: var(--green);
+    text-shadow: 0 0 6px rgba(0,255,136,0.5);
+  }
+
+  .result-flicker {
+    color: var(--amber);
+    text-shadow: 0 0 6px rgba(255,170,0,0.5);
+  }
+
+  .log-empty {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 12px;
+    letter-spacing: 2px;
+  }
+
+  /* Toast notification */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    padding: 12px 24px;
+    border: 1px solid var(--green);
+    background: #030c06;
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--green);
+    box-shadow: 0 0 30px rgba(0,255,136,0.3);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.4s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.error {
+    border-color: var(--red);
+    color: var(--red);
+    text-shadow: 0 0 10px var(--red);
+    box-shadow: 0 0 30px rgba(255,51,51,0.3);
+  }
+
+  .toast.warning {
+    border-color: var(--amber);
+    color: var(--amber);
+    text-shadow: 0 0 10px var(--amber);
+    box-shadow: 0 0 30px rgba(255,170,0,0.3);
+  }
+
+  /* Victory / Fried screens */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay.show { display: flex; }
+
+  .overlay-box {
+    border: 2px solid var(--green);
+    background: #030c06;
+    padding: 40px 50px;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 0 60px rgba(0,255,136,0.3);
+    animation: zoomin 0.3s ease;
+  }
+
+  @keyframes zoomin {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .overlay-box.fried {
+    border-color: var(--red);
+    box-shadow: 0 0 60px rgba(255,51,51,0.3);
+  }
+
+  .overlay-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 20px var(--green);
+    margin-bottom: 12px;
+    letter-spacing: 3px;
+  }
+
+  .overlay-box.fried .overlay-title {
+    color: var(--red);
+    text-shadow: 0 0 20px var(--red);
+  }
+
+  .overlay-msg {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .overlay-btn {
+    padding: 12px 30px;
+    border: 1px solid var(--green);
+    background: transparent;
+    color: var(--green);
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .overlay-btn:hover {
+    background: var(--green-glow);
+    box-shadow: 0 0 20px rgba(0,255,136,0.3);
+  }
+
+  .overlay-box.fried .overlay-btn {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .overlay-box.fried .overlay-btn:hover {
+    background: rgba(255,51,51,0.1);
+    box-shadow: 0 0 20px rgba(255,51,51,0.3);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    padding-top: 10px;
+  }
+
+  /* Attempt counter dots */
+  .attempt-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .attempt-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    transition: all 0.3s;
+  }
+
+  .attempt-dot.used {
+    background: var(--red-dim);
+    border-color: var(--red);
+    box-shadow: 0 0 6px rgba(255,51,51,0.4);
+  }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+
+  <div class="header">
+    <div class="header-title">COMPUTER CORE</div>
+    <div class="header-sub">Force Sensitive — Crafting Module IV — Circuit Configuration Trainer</div>
+  </div>
+
+  <!-- Integrity -->
+  <div class="integrity-section">
+    <div class="integrity-label">
+      <span>▸ CIRCUIT INTEGRITY</span>
+      <span class="integrity-value" id="integrityText">100%</span>
+    </div>
+    <div class="integrity-bar-outer">
+      <div class="integrity-bar-inner" id="integrityBar" style="width:100%"></div>
+    </div>
+    <div class="attempt-dots" id="attemptDots"></div>
+  </div>
+
+  <!-- Indicators -->
+  <div class="indicators-row">
+    <div class="indicator-wrap">
+      <div class="indicator" id="ind0">■</div>
+      <div class="indicator-label">IND-1</div>
+    </div>
+    <div class="indicator-wrap">
+      <div class="indicator" id="ind1">■</div>
+      <div class="indicator-label">IND-2</div>
+    </div>
+    <div class="indicator-wrap">
+      <div class="indicator" id="ind2">■</div>
+      <div class="indicator-label">IND-3</div>
+    </div>
+    <div class="indicator-wrap">
+      <div class="indicator" id="ind3">■</div>
+      <div class="indicator-label">IND-4</div>
+    </div>
+  </div>
+
+  <!-- Wire configuration -->
+  <div class="config-section">
+    <div class="section-title">▸ CONFIGURE WIRE CONNECTIONS</div>
+    <div class="connections-grid" id="connectionsGrid"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="action-row">
+    <button class="action-btn primary" onclick="testConfiguration()">▶ TEST CIRCUIT</button>
+    <button class="action-btn danger" onclick="resetCore()">↺ RESET CORE</button>
+  </div>
+
+  <!-- Log -->
+  <div class="log-section">
+    <div class="section-title">▸ TEST LOG</div>
+    <div id="logContainer">
+      <div class="log-empty">— NO TESTS CONDUCTED —</div>
+    </div>
+  </div>
+
+  <div class="footer">IMPERIAL REMNANT SYSTEMS — TRAINING SIMULATION v2.4 — FOR CALIBRATION USE ONLY</div>
+</div>
+
+<!-- Victory overlay -->
+<div class="overlay" id="victoryOverlay">
+  <div class="overlay-box">
+    <div class="overlay-title">CORE CONFIGURED</div>
+    <div class="overlay-msg" id="victoryMsg"></div>
+    <button class="overlay-btn" onclick="newGame()">LOAD NEW CORE</button>
+  </div>
+</div>
+
+<!-- Fried overlay -->
+<div class="overlay" id="friedOverlay">
+  <div class="overlay-box fried">
+    <div class="overlay-title">CORE OVERLOADED</div>
+    <div class="overlay-msg" id="friedMsg"></div>
+    <button class="overlay-btn" onclick="newGame()">ACQUIRE REPLACEMENT</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const WIRE_NONE   = 0;
+  const WIRE_RED    = 1;
+  const WIRE_BLUE   = 2;
+  const WIRE_YELLOW = 3;
+
+  const WIRE_NAMES = { 0: 'NONE', 1: 'RED', 2: 'BLUE', 3: 'YELLOW' };
+  const WIRE_CLASSES = { 0: 'none', 1: 'red', 2: 'blue', 3: 'yellow' };
+
+  let solution = [];
+  let currentGuess = [0, 0, 0, 0];
+  let integrity = 96;
+  let attempts = [];
+  let maxAttempts = 8; // display limit for dots
+  let gameOver = false;
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function newGame() {
+    // Solution: values 1-3 (red, blue, yellow) for each of 4 contacts — same as Lua getRandomNumber(1,3)
+    solution = [randomInt(1,3), randomInt(1,3), randomInt(1,3), randomInt(1,3)];
+    currentGuess = [0, 0, 0, 0];
+    integrity = randomInt(93, 99);
+    attempts = [];
+    gameOver = false;
+
+    document.getElementById('victoryOverlay').classList.remove('show');
+    document.getElementById('friedOverlay').classList.remove('show');
+
+    renderAll();
+  }
+
+  function renderAll() {
+    renderIntegrity();
+    renderIndicators(null, null);
+    renderConnections();
+    renderLog();
+    renderAttemptDots();
+  }
+
+  function renderIntegrity() {
+    const pct = Math.max(0, integrity);
+    const bar = document.getElementById('integrityBar');
+    const txt = document.getElementById('integrityText');
+
+    txt.textContent = pct + '%';
+    bar.style.width = pct + '%';
+
+    bar.className = 'integrity-bar-inner';
+    txt.className = 'integrity-value';
+
+    if (pct <= 20) {
+      bar.classList.add('critical');
+      txt.classList.add('critical');
+    } else if (pct <= 50) {
+      bar.classList.add('warning');
+    }
+  }
+
+  function renderIndicators(lit, flickering) {
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById('ind' + i);
+      el.className = 'indicator';
+      el.textContent = '■';
+      if (lit && lit > i) {
+        el.classList.add('lit');
+        el.textContent = '';
+      } else if (flickering && flickering > 0 && !lit) {
+        // show flickering on random indicators for visual effect only
+      }
+    }
+  }
+
+  function renderConnections() {
+    const grid = document.getElementById('connectionsGrid');
+    grid.innerHTML = '';
+    const labels = ['ONE', 'TWO', 'THREE', 'FOUR'];
+    for (let i = 0; i < 4; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'connection-slot';
+      slot.innerHTML = `
+        <div class="connection-slot-label">▸ CONTACT ${labels[i]}</div>
+        <div class="wire-buttons">
+          <button class="wire-btn ${currentGuess[i]===0?'selected-none':''}" onclick="setWire(${i},0)">NONE</button>
+          <button class="wire-btn ${currentGuess[i]===1?'selected-red':''}" onclick="setWire(${i},1)">RED</button>
+          <button class="wire-btn ${currentGuess[i]===2?'selected-blue':''}" onclick="setWire(${i},2)">BLUE</button>
+          <button class="wire-btn ${currentGuess[i]===3?'selected-yellow':''}" onclick="setWire(${i},3)">YLW</button>
+        </div>
+      `;
+      grid.appendChild(slot);
+    }
+  }
+
+  function renderLog() {
+    const container = document.getElementById('logContainer');
+    if (attempts.length === 0) {
+      container.innerHTML = '<div class="log-empty">— NO TESTS CONDUCTED —</div>';
+      return;
+    }
+    container.innerHTML = '';
+    // Newest first
+    for (let i = attempts.length - 1; i >= 0; i--) {
+      const a = attempts[i];
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+
+      const chips = a.guess.map(w => `<span class="log-wire-chip ${WIRE_CLASSES[w]}">${WIRE_NAMES[w]}</span>`).join('');
+
+      entry.innerHTML = `
+        <div class="log-attempt">TEST ${String(i+1).padStart(2,'0')} — INTEGRITY AFTER: ${a.integrityAfter}%</div>
+        <div class="log-wires">${chips}</div>
+        <div class="log-result">
+          <span class="result-lit">● LIT: ${a.lit}</span>
+          <span class="result-flicker">◌ FLICKER: ${a.flicker}</span>
+        </div>
+      `;
+      container.appendChild(entry);
+    }
+  }
+
+  function renderAttemptDots() {
+    const row = document.getElementById('attemptDots');
+    row.innerHTML = '';
+    for (let i = 0; i < maxAttempts; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'attempt-dot' + (i < attempts.length ? ' used' : '');
+      row.appendChild(dot);
+    }
+  }
+
+  function setWire(slot, wire) {
+    if (gameOver) return;
+    currentGuess[slot] = wire;
+    renderConnections();
+  }
+
+  function testConfiguration() {
+    if (gameOver) return;
+
+    // Mirror the Lua attemptConfigure logic exactly
+    const guess = [...currentGuess];
+    const sol   = [...solution];
+
+    const puzzleResults = [false, false, false, false];
+    let correctlyConnected = 0;
+
+    // First pass: exact matches (lit indicators)
+    for (let i = 0; i < 4; i++) {
+      if (guess[i] === sol[i]) {
+        puzzleResults[i] = true;
+        correctlyConnected++;
+      }
+    }
+
+    if (correctlyConnected === 4) {
+      // Victory
+      gameOver = true;
+      document.getElementById('victoryMsg').textContent =
+        `All four indicators are lit. Core successfully configured in ${attempts.length + 1} attempt${attempts.length===0?'':'s'}. Circuit integrity held at ${integrity}%.`;
+
+      // Light all 4
+      for (let i = 0; i < 4; i++) {
+        const el = document.getElementById('ind' + i);
+        el.className = 'indicator lit';
+        el.textContent = '';
+      }
+
+      setTimeout(() => {
+        document.getElementById('victoryOverlay').classList.add('show');
+      }, 800);
+      return;
+    }
+
+    // Second pass: correct wire type, wrong position (flicker) — mirrors Lua tempResults logic
+    let correctWiresUsed = 0;
+    const tempResults = [...puzzleResults];
+
+    for (let i = 0; i < 4; i++) {
+      if (!puzzleResults[i]) {
+        const curGuess = guess[i];
+        let broken = false;
+        for (let j = 0; j < 4; j++) {
+          if (!broken && !tempResults[j] && sol[j] === curGuess) {
+            correctWiresUsed++;
+            tempResults[j] = true;
+            broken = true;
+          }
+        }
+      }
+    }
+
+    // Integrity damage: 13-17 per failed test
+    const damage = randomInt(13, 17);
+    integrity -= damage;
+
+    attempts.push({
+      guess: [...guess],
+      lit: correctlyConnected,
+      flicker: correctWiresUsed,
+      integrityAfter: Math.max(0, integrity)
+    });
+
+    // Update indicators visually for this test result
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById('ind' + i);
+      el.className = 'indicator';
+      el.textContent = '■';
+    }
+    // Light exactly correctlyConnected indicators
+    for (let i = 0; i < correctlyConnected; i++) {
+      const el = document.getElementById('ind' + i);
+      el.className = 'indicator lit';
+      el.textContent = '';
+    }
+    // Flicker the next ones if any
+    for (let i = correctlyConnected; i < correctlyConnected + correctWiresUsed; i++) {
+      if (i < 4) {
+        const el = document.getElementById('ind' + i);
+        el.className = 'indicator flicker';
+      }
+    }
+
+    renderIntegrity();
+    renderLog();
+    renderAttemptDots();
+
+    if (integrity <= 0) {
+      gameOver = true;
+      const solStr = sol.map(w => WIRE_NAMES[w]).join(' / ');
+      document.getElementById('friedMsg').textContent =
+        `Circuit integrity reached zero. Core is non-viable and has been reset.\n\nThe correct configuration was: ${solStr}`;
+      setTimeout(() => {
+        document.getElementById('friedOverlay').classList.add('show');
+      }, 600);
+    } else {
+      const msg = `Indicators lit: ${correctlyConnected} | Flickering: ${correctWiresUsed} | Integrity: ${Math.max(0,integrity)}%`;
+      showToast(msg, integrity <= 30 ? 'error' : integrity <= 55 ? 'warning' : '');
+    }
+  }
+
+  function resetCore() {
+    if (confirm('Reset to a fresh puzzle?')) newGame();
+  }
+
+  let toastTimeout;
+  function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (type ? ' ' + type : '');
+    void t.offsetWidth;
+    t.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // Boot
+  newGame();
+</script>
+</body>
+</html>
