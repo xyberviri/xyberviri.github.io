@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWG Infinity Village Phases</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#020a02;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:24px 12px;font-family:'Share Tech Mono',monospace;}
+#swg-root{
+  width:100%;max-width:840px;
+  background:#050e05;
+  border:1px solid #1a3a1a;
+  border-radius:6px;
+  overflow:hidden;position:relative;
+}
+#swg-root::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px);
+  pointer-events:none;z-index:10;
+}
+.swg-header{
+  background:#0a1a0a;border-bottom:1px solid #1a4a1a;
+  padding:12px 18px;display:flex;align-items:center;gap:14px;
+}
+.swg-logo{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#55ff55;letter-spacing:3px;}
+.swg-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#88ff44;letter-spacing:1px;}
+.swg-blink{animation:blink 1.2s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.swg-body{padding:16px 18px;}
+.swg-drop{
+  border:1px dashed #2a5a2a;border-radius:4px;
+  padding:28px 14px;text-align:center;cursor:pointer;
+  background:#040c04;transition:background 0.15s,border-color 0.15s;
+  margin-bottom:14px;
+}
+.swg-drop:hover,.swg-drop.drag-over{background:#081408;border-color:#44aa44;}
+.swg-drop-icon{font-size:32px;color:#2a6a2a;display:block;margin-bottom:8px;}
+.swg-drop p{font-size:12px;color:#44aa44;line-height:1.7;}
+.swg-drop em{color:#88ff44;font-style:normal;}
+.swg-canvas-wrap{
+  display:none;border:1px solid #1a4a1a;border-radius:4px;
+  overflow:hidden;cursor:crosshair;margin-bottom:14px;position:relative;
+}
+.swg-canvas-wrap canvas{display:block;max-width:100%;}
+.swg-hint{font-size:11px;color:#336633;margin-bottom:14px;line-height:1.7;display:none;}
+.swg-sample-row{display:none;gap:10px;margin-bottom:14px;align-items:stretch;}
+.swg-channel{
+  flex:1;background:#040c04;border:1px solid #1a3a1a;border-radius:4px;
+  padding:10px 12px;display:flex;flex-direction:column;gap:8px;
+}
+.swg-ch-label{font-family:'Orbitron',sans-serif;font-size:9px;color:#44aa44;letter-spacing:1px;}
+.swg-swatch-wrap{display:flex;align-items:center;gap:8px;}
+.swg-swatch{width:36px;height:36px;border:1px solid #1a4a1a;border-radius:3px;flex-shrink:0;background:#040c04;}
+.swg-hex{font-size:12px;color:#88ff44;}
+.swg-result-label{font-size:10px;color:#336633;margin-top:2px;}
+.swg-slider-val{font-family:'Orbitron',sans-serif;font-size:24px;font-weight:700;color:#88ff44;line-height:1;}
+.swg-slider-val.perfect{color:#44ffaa;}
+.swg-bar-outer{height:8px;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:2px;overflow:hidden;}
+.swg-bar-inner{height:100%;background:#33ff33;border-radius:2px;transition:width 0.3s;}
+.swg-divider{border:none;border-top:1px solid #1a3a1a;margin:12px 0;}
+.swg-output-box{
+  background:#020802;border:1px solid #1a3a1a;border-radius:4px;
+  padding:12px 16px;display:none;
+}
+.swg-out-title{font-family:'Orbitron',sans-serif;font-size:10px;color:#44aa44;letter-spacing:1px;margin-bottom:10px;}
+.swg-out-line{font-size:12px;color:#88ff44;line-height:2.1;}
+.swg-out-line span{color:#33ff33;}
+.swg-out-line .dim{color:#44aa44;}
+.swg-status{
+  margin-top:10px;font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:1px;
+  padding:7px 12px;border-radius:3px;border:1px solid;text-align:center;
+}
+.swg-status.ok{color:#44ffaa;border-color:#1a6a4a;background:#031108;}
+.swg-status.warn{color:#ffcc00;border-color:#6a5a00;background:#100e00;}
+.swg-reset-btn{
+  display:none;margin-top:14px;width:100%;
+  background:transparent;border:1px solid #2a5a2a;border-radius:3px;
+  color:#44aa44;font-family:'Share Tech Mono',monospace;font-size:12px;
+  padding:8px;cursor:pointer;letter-spacing:1px;transition:background 0.1s,color 0.1s;
+}
+.swg-reset-btn:hover{background:#0a1a0a;color:#88ff44;}
+.swg-mag{
+  position:absolute;width:110px;height:110px;border-radius:50%;
+  border:2px solid #44aa44;pointer-events:none;display:none;overflow:hidden;z-index:5;
+}
+input[type=file]{display:none}
+.pick-dot{
+  position:absolute;width:10px;height:10px;border-radius:50%;
+  background:#44ffaa;border:2px solid #050e05;transform:translate(-50%,-50%);
+  pointer-events:none;z-index:5;font-size:9px;
+}
+</style>
+</head>
+<body>
+<div id="swg-root">
+  <div class="swg-header">
+    <div class="swg-logo">SWG</div>
+    <div class="swg-title">Infinity Village Phases<span class="swg-blink">_</span></div>
+  </div>
+  <div class="swg-body">
+<iframe src="https://calendar.google.com/calendar/embed?src=fc770a3016fc57af21d36a6e7d269ddcd538fcac906944e912a4ae2d37dba8c6%40group.calendar.google.com&ctz=America%2FNew_York" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+
+  </div>
+</div>
+
+<script>
+const drop = document.getElementById('swg-drop');
+const fileIn = document.getElementById('swg-file');
+const cwrap = document.getElementById('swg-cwrap');
+const canvas = document.getElementById('swg-canvas');
+const ctx = canvas.getContext('2d', {willReadFrequently:true});
+const mag = document.getElementById('swg-mag');
+const magc = document.getElementById('swg-magc');
+const magCtx = magc.getContext('2d');
+const hint = document.getElementById('swg-hint');
+const samplesRow = document.getElementById('swg-samples');
+const outBox = document.getElementById('swg-out');
+const resetBtn = document.getElementById('swg-reset');
+
+let picks = [];
+const MAX_PICKS = 3;
+let dotEls = [];
+
+drop.addEventListener('click', () => fileIn.click());
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('drag-over'); loadFile(e.dataTransfer.files[0]); });
+fileIn.addEventListener('change', () => loadFile(fileIn.files[0]));
+resetBtn.addEventListener('click', reset);
+
+function loadFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const maxW = cwrap.parentElement.clientWidth || 700;
+    const scale = Math.min(1, maxW / img.naturalWidth);
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    drop.style.display = 'none';
+    cwrap.style.display = 'block';
+    hint.style.display = 'block';
+    samplesRow.style.display = 'flex';
+    resetBtn.style.display = 'block';
+    URL.revokeObjectURL(url);
+    picks = [];
+    dotEls.forEach(d => d.remove());
+    dotEls = [];
+    updateChannels();
+  };
+  img.src = url;
+}
+
+canvas.addEventListener('mousemove', e => {
+  if (picks.length >= MAX_PICKS) { mag.style.display='none'; return; }
+  const r = canvas.getBoundingClientRect();
+  const sx = canvas.width / r.width, sy = canvas.height / r.height;
+  const x = Math.floor((e.clientX - r.left) * sx);
+  const y = Math.floor((e.clientY - r.top) * sy);
+  if (x<0||y<0||x>=canvas.width||y>=canvas.height) return;
+  drawMag(x, y);
+  const ox = e.clientX - r.left + 14;
+  const oy = e.clientY - r.top - 60;
+  mag.style.left = Math.min(ox, r.width - 120) + 'px';
+  mag.style.top = Math.max(oy, 4) + 'px';
+  mag.style.display = 'block';
+});
+
+canvas.addEventListener('mouseleave', () => mag.style.display = 'none');
+
+canvas.addEventListener('click', e => {
+  if (picks.length >= MAX_PICKS) return;
+  const r = canvas.getBoundingClientRect();
+  const sx = canvas.width / r.width, sy = canvas.height / r.height;
+  const cx = e.clientX - r.left;
+  const cy = e.clientY - r.top;
+  const x = Math.floor(cx * sx);
+  const y = Math.floor(cy * sy);
+  const d = ctx.getImageData(x, y, 1, 1).data;
+  const avg = Math.round((d[0] + d[1] + d[2]) / 3);
+  picks.push(avg);
+
+  const dot = document.createElement('div');
+  dot.className = 'pick-dot';
+  dot.style.left = cx + 'px';
+  dot.style.top = cy + 'px';
+  dot.title = 'CH ' + picks.length;
+  cwrap.appendChild(dot);
+  dotEls.push(dot);
+
+  updateChannels();
+  if (picks.length === MAX_PICKS) {
+    mag.style.display = 'none';
+    canvas.style.cursor = 'default';
+    hint.innerHTML = '&gt; <span style="color:#44ffaa">&#10003; All 3 channels sampled.</span> Solution calculated below.';
+    showSolution();
+  }
+});
+
+function drawMag(cx, cy) {
+  const zoom = 8, size = 110, half = size / 2;
+  magCtx.clearRect(0, 0, size, size);
+  magCtx.imageSmoothingEnabled = false;
+  magCtx.drawImage(canvas, cx - half/zoom, cy - half/zoom, size/zoom, size/zoom, 0, 0, size, size);
+  magCtx.strokeStyle = 'rgba(68,255,68,0.75)';
+  magCtx.lineWidth = 1;
+  const cs = zoom;
+  magCtx.beginPath(); magCtx.moveTo(half, half-cs); magCtx.lineTo(half, half+cs); magCtx.stroke();
+  magCtx.beginPath(); magCtx.moveTo(half-cs, half); magCtx.lineTo(half+cs, half); magCtx.stroke();
+}
+
+function avgToSlider(avg) {
+  return Math.round((avg / 255) * 100);
+}
+
+function toHex2(v) { return v.toString(16).padStart(2, '0'); }
+
+function updateChannels() {
+  for (let i = 0; i < 3; i++) {
+    const sw = document.getElementById('sw'+i);
+    const hx = document.getElementById('hx'+i);
+    const sv = document.getElementById('sv'+i);
+    const sb = document.getElementById('sb'+i);
+    if (i < picks.length) {
+      const avg = picks[i];
+      const h = toHex2(avg);
+      const hex = '#'+h+h+h;
+      const v = avgToSlider(avg);
+      sw.style.background = hex;
+      hx.textContent = hex;
+      sv.textContent = v;
+      sb.style.width = v + '%';
+      sb.style.background = v > 60 ? '#44ff88' : v > 30 ? '#ffcc00' : '#ff4444';
+      sv.className = 'swg-slider-val' + (v > 90 ? ' perfect' : '');
+    } else {
+      sw.style.background = '#040c04';
+      hx.innerHTML = '#&mdash;';
+      sv.innerHTML = '&mdash;';
+      sb.style.width = '0%';
+    }
+  }
+}
+
+function showSolution() {
+  outBox.style.display = 'block';
+  const labels = ['GYRO AXIS X  (slider 1)', 'GYRO AXIS Y  (slider 2)', 'GYRO AXIS Z  (slider 3)'];
+  let anyEdge = false;
+  picks.forEach((avg, i) => {
+    const v = avgToSlider(avg);
+    if (v <= 5 || v >= 95) anyEdge = true;
+    const lo = Math.max(0, v-5), hi = Math.min(100, v+5);
+    const ol = document.getElementById('ol'+i);
+    ol.innerHTML = labels[i] + ':&nbsp;&nbsp;<span>' + v + ' / 100</span>&nbsp;&nbsp;<span class="dim">[ &plusmn;5 ok: ' + lo + '&ndash;' + hi + ' ]</span>';
+  });
+  const status = document.getElementById('swg-status');
+  if (anyEdge) {
+    status.className = 'swg-status warn';
+    status.textContent = 'WARNING: VALUE NEAR LIMIT — VERIFY BAR COLOR VISUALLY';
+  } else {
+    status.className = 'swg-status ok';
+    status.textContent = 'SOLUTION READY — SET SLIDERS AND ATTEMPT CALIBRATION';
+  }
+}
+
+function reset() {
+  picks = [];
+  dotEls.forEach(d => d.remove());
+  dotEls = [];
+  drop.style.display = 'block';
+  cwrap.style.display = 'none';
+  hint.style.display = 'none';
+  hint.innerHTML = '&gt; Click the <span style="color:#88ff44">SERVER (goal) bars</span> &mdash; the bars in the top half of the puzzle window. Click one per channel (3 total). The solver reads the grayscale value and calculates the exact slider position.';
+  samplesRow.style.display = 'none';
+  outBox.style.display = 'none';
+  resetBtn.style.display = 'none';
+  canvas.style.cursor = 'crosshair';
+  updateChannels();
+  fileIn.value = '';
+}
+</script>
+</body>
+</html>
