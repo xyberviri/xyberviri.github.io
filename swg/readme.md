@@ -3,7 +3,7 @@
 
 [Phase 1 CM - Assembly Processor Puzzle](processor_puzzle_solver.html)
 
-[Phase 1 CM - Assembly Receiver Puzzle](swg_receiver_puzzle_solver.html)
+[Phase 1 CM - Assembly Receiver Puzzle](receiver_puzzle_solver.html)
 
 [Phase 4 CM - Repair Computer Core Puzzle Solver](computer_core_solver.html)
 
